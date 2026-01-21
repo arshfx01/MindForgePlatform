@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 94.1176%;
+    --foreground: 0 0% 23.9216%;
+    --card: 0 0% 98.0392%;
+    --card-foreground: 0 0% 20%;
+    --popover: 0 0% 98.8235%;
+    --popover-foreground: 0 0% 32.1569%;
+    --primary: 223 58.8235% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 99.2157%;
+    --secondary-foreground: 0 0% 9.0196%;
+    --muted: 0 0% 78.0392%;
+    --muted-foreground: 0 0% 12.5490%;
+    --accent: 0 0% 92.9412%;
+    --accent-foreground: 0 0% 12.5490%;
+    --destructive: 9.8901 81.9820% 43.5294%;
+    --destructive-foreground: 0 100% 99.4118%;
+    --border: 0 0% 87.0588%;
+    --input: 0 0% 96.4706%;
+    --ring: 151.3274 66.8639% 66.8627%;
+    --chart-1: 223 58.8235% 60%;
+    --chart-2: 217.2193 91.2195% 59.8039%;
+    --chart-3: 258.3117 89.5349% 66.2745%;
+    --chart-4: 37.6923 92.1260% 50.1961%;
+    --chart-5: 160.1183 84.0796% 39.4118%;
+    --sidebar: 0 0% 87.0588%;
+    --sidebar-foreground: 0 0% 43.9216%;
+    --sidebar-primary: 223 58.8235% 60%;
+    --sidebar-primary-foreground: 153.3333 13.0435% 13.5294%;
+    --sidebar-accent: 0 0% 92.9412%;
+    --sidebar-accent-foreground: 0 0% 12.5490%;
+    --sidebar-border: 0 0% 87.4510%;
+    --sidebar-ring: 223 58.8235% 60%;
+    --font-sans: Geist, ui-sans-serif, sans-serif, system-ui;
+    --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+    --font-mono: Geist Mono, ui-monospace, monospace;
+    --radius: 0.525rem;
+    --shadow-x: 0px;
+    --shadow-y: 1px;
+    --shadow-blur: 3px;
+    --shadow-spread: 0px;
+    --shadow-opacity: 0.02;
+    --shadow-color: #000000;
+    --shadow-2xs: 0px 1px 3px 0px hsl(0 0% 0% / 0.01);
+    --shadow-xs: 0px 1px 3px 0px hsl(0 0% 0% / 0.01);
+    --shadow-sm: 0px 1px 3px 0px hsl(0 0% 0% / 0.02), 0px 1px 2px -1px hsl(0 0% 0% / 0.02);
+    --shadow: 0px 1px 3px 0px hsl(0 0% 0% / 0.02), 0px 1px 2px -1px hsl(0 0% 0% / 0.02);
+    --shadow-md: 0px 1px 3px 0px hsl(0 0% 0% / 0.02), 0px 2px 4px -1px hsl(0 0% 0% / 0.02);
+    --shadow-lg: 0px 1px 3px 0px hsl(0 0% 0% / 0.02), 0px 4px 6px -1px hsl(0 0% 0% / 0.02);
+    --shadow-xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.02), 0px 8px 10px -1px hsl(0 0% 0% / 0.02);
+    --shadow-2xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --tracking-normal: 0em;
+    --spacing: 0.23rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  @keyframes spin-slow-reverse {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(-360deg);
+    }
+  }
+
+  .animate-spin-slow-reverse {
+    animation: spin-slow-reverse 8s linear infinite;
+  }
+}

@@ -1,0 +1,33 @@
+PROGRESSION SYSTEM
+
+1. Experience Points (XP)
+
+Base Reward: Score x 2.
+
+Streak Bonus: +10% XP for every day in a streak (caps at +50%).
+
+First-Time Clear: +100 XP bonus.
+
+2. Levels & Titles
+
+Level 1-5: "The Apprentice" (Unlocks basic logic puzzles).
+
+Level 6-15: "The Analyst" (Unlocks business & economic crises).
+
+Level 16-30: "The Strategist" (Unlocks global geopolitical dilemmas).
+
+Level 31+: "The Sage" (User can now "Peer Review" others).
+
+3. Badges (The "Dopamine Hits")
+
+"Fallacy Hunter": Find 5 different fallacies in scenarios.
+
+"Devil's Advocate": Submit a high-scoring argument for a position you personally disagree with.
+
+"Iron Logic": Score 95+ on three consecutive scenarios.
+
+4. The Daily Dilemma
+
+One scenario per day that offers 2x XP.
+
+Global leaderboard resets weekly to keep competition fresh for new users.

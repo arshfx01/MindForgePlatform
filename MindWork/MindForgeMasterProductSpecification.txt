@@ -1,0 +1,93 @@
+MindForge: Master Product Specification
+
+1. Project Vision
+
+MindForge is a high-fidelity, gamified learning platform designed to bridge the gap between theoretical logic and practical critical thinking. It uses a "Socratic AI" approach to challenge users' biases, identify fallacies, and reward structured reasoning.
+
+2. The "AI Oracle" Intelligence Engine
+
+The core of the app is the AI Oracle. It does not just "grade" responses; it acts as a sparring partner.
+
+A. The Evaluation Framework (4 Pillars)
+
+Formal Logic: Identifying 15+ common fallacies (Straw man, Ad hominem, Sunk cost, Circular reasoning, etc.).
+
+Multilateral Nuance: Checking if the user considered secondary and tertiary stakeholders.
+
+Evidence/Assumption Parsing: Distinguishing between what is "stated fact" in the scenario and what the user is "assuming" without proof.
+
+Structural Clarity: Evaluating the rhetorical strength and flow of the argument.
+
+B. Adaptive Challenge Logic
+
+The "Black Swan" Trigger: If a user scores >90, the AI does not just praise them. It generates a "Black Swan" event—a new, unexpected variable that contradicts their previous logic—and asks them to pivot.
+
+Tone: Clinical, elite, encouraging, but intellectually demanding.
+
+3. Detailed Feature Set
+
+3.1 The Dashboard (Progression Hub)
+
+The Skill Radar: A three-way stat grid (Logic Prowess, Cognitive Flexibility, Ethical Nuance) that grows as the user completes specific scenario types.
+
+The Path: A "Saga Map" visualization showing unlocked and locked scenarios.
+
+Streak Tracker: A visual "Heatmap" (GitHub style) showing daily critical thinking practice.
+
+3.2 The Arena (The Gameplay Loop)
+
+Scenario Presentation: Narrated text with "Key Variables" badges (e.g., [Limited Time], [High Stakes], [Incomplete Info]).
+
+The Reasoning Sandbox: A distraction-free markdown editor where users build their case.
+
+Real-time Feedback Loop:
+
+Step 1: User submits.
+
+Step 2: AI generates JSON evaluation.
+
+Step 3: UI displays a "Thinking..." skeleton, then reveals the Score Gauge via Framer Motion.
+
+Step 4: "Fallacy Tags" appear as clickable badges that explain the logic error when hovered.
+
+3.3 Gamification & Economy
+
+XP Calculation: Base Score * Multipliers (Streak + Difficulty).
+
+Badge System:
+
+The Skeptic: Questioned a provided "fact" that was actually an assumption.
+
+The Diplomat: Successfully balanced 3+ stakeholder needs in an ethical dilemma.
+
+Steel-manned: Correctly represented the opposing view before debunking it.
+
+4. Technical Architecture (Next.js 14)
+
+State Management
+
+Local State: Use GameStateContext to wrap the application, persisting XP and Level data to localStorage (for MVP) or Supabase/Firebase (for Scale).
+
+UI/UX Specifications
+
+Theme: "Deep Space" (Background: #020617, Card: #0f172a).
+
+Typography: Inter (Sans) for UI, JetBrains Mono for "Logic Critiques" to give a technical feel.
+
+Components: - Shadcn Tabs for switching between "Scenario", "References", and "Feedback".
+
+Shadcn Progress for the Level Up bar in the Navbar.
+
+5. Sample Game Flow (The User Journey)
+
+Entry: User logs in and sees they are 50 XP away from Level 5 "The Analyst".
+
+Selection: They choose "The Autonomous Vehicle Dilemma" (Difficulty: Hard).
+
+Analysis: They write 3 paragraphs justifying a specific algorithmic choice.
+
+Critique: AI identifies a "False Dilemma" fallacy and awards a 75/100.
+
+Challenge: AI asks: "What if the vehicle's sensors were known to be 20% faulty? Does your logic still hold?"
+
+Resolution: User provides a pivot, gains +150 XP, and hits Level 5.
