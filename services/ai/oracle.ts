@@ -1,36 +1,54 @@
-import { vertexAI } from "@/lib/firebase";
-import { getGenerativeModel } from "firebase/vertexai";
+"use server";
+
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const apiKey = process.env.GEMINI_API_KEY;
+
+if (!apiKey) {
+    console.error("CRITICAL: GEMINI_API_KEY is not set.");
+}
+
+const genAI = new GoogleGenerativeAI(apiKey || "INVALID");
 
 // Priority List: Standard 2.0 Flash -> Lite -> 1.5 Fallback
-// Note: Firebase Vertex AI model names might differ slightly, usually 'gemini-1.5-flash' etc.
-// 'gemini-2.0-flash-exp' might be available in preview.
-// Let's stick to standard 'gemini-1.5-flash' for stability if 2.0 fails, or use 1.5-flash as main.
 const MODEL_PRIORITY = [
-    "gemini-1.5-flash",
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite-preview-02-05",
+    "gemini-flash-latest"
 ];
 
 async function generateContentWithRetry(prompt: string, retries = 2, delay = 2000) {
-    // For now, simpler implementation with single model or simple retry
-    const modelName = "gemini-1.5-flash"; // Strong default for Firebase
-    const model = getGenerativeModel(vertexAI, { model: modelName });
+    for (const modelName of MODEL_PRIORITY) {
+        const currentModel = genAI.getGenerativeModel({ model: modelName });
+        console.log(`[Oracle] Attempting generation with model: ${modelName}`);
 
-    console.log(`[Oracle] Attempting generation with model: ${modelName}`);
+        for (let i = 0; i < retries; i++) {
+            try {
+                return await currentModel.generateContent(prompt);
+            } catch (error: any) {
+                const isRateLimit = error.status === 429 || error.message?.includes('429');
+                const isNotFound = error.status === 404 || error.message?.includes('404');
 
-    for (let i = 0; i < retries; i++) {
-        try {
-            const result = await model.generateContent(prompt);
-            return result;
-        } catch (error: any) {
-            console.warn(`[Oracle] Generation failed (attempt ${i + 1}):`, error);
-            if (i < retries - 1) {
-                await new Promise(res => setTimeout(res, delay));
-                delay *= 2;
-            } else {
-                throw error;
+                if (isNotFound) {
+                    console.warn(`[Oracle] Model ${modelName} not found (404). Skipping to next model...`);
+                    break; // Break retry loop, move to next model
+                }
+
+                if (isRateLimit && i < retries - 1) {
+                    console.warn(`[Oracle] Rate limited on ${modelName}. Retrying in ${delay / 1000}s...`);
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2;
+                    continue;
+                }
+
+                // If it's the last retry for this model, fallback
+                if (i === retries - 1) {
+                    console.error(`[Oracle] Model ${modelName} failed after retries.`);
+                }
             }
         }
     }
-    throw new Error("AI generation failed.");
+    throw new Error("All AI models failed or rate limited.");
 }
 
 export interface OnboardingQuestion {
@@ -84,9 +102,9 @@ export async function generateOnboardingQuestions(): Promise<OnboardingQuestion[
 
     try {
         const result = await generateContentWithRetry(prompt);
-        const text = await result.response.text();
-        const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
-        const parsed = JSON.parse(cleanText);
+        const response = result.response;
+        const text = response.text().replace(/```json/g, "").replace(/```/g, "").trim();
+        const parsed = JSON.parse(text);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
         return FALLBACK_QUESTIONS;
     } catch (error) {
@@ -112,9 +130,8 @@ export async function evaluateOnboarding(answers: { questionId: number, answerIn
 
     try {
         const result = await generateContentWithRetry(prompt);
-        const text = await result.response.text();
-        const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
-        return JSON.parse(cleanText);
+        const text = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
+        return JSON.parse(text);
     } catch (e) {
         return { level: 1, stats: { logic: 20, flexibility: 20, ethics: 20 } };
     }
@@ -143,7 +160,7 @@ export async function generateScenario(userLevel: number, stats?: { logic: numbe
     `;
     try {
         const result = await generateContentWithRetry(prompt);
-        return await result.response.text();
+        return result.response.text();
     } catch (error) {
         console.error("Scenario Gen Error:", error);
         return "# Offline Mode\nSystem couldn't reach the Oracle.";
@@ -177,9 +194,8 @@ export async function evaluateSubmission(scenario: string, userResponse: string)
 
     try {
         const result = await generateContentWithRetry(prompt);
-        const text = await result.response.text();
-        const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
-        return JSON.parse(cleanText);
+        const text = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
+        return JSON.parse(text);
     } catch (e) {
         return errorResult;
     }

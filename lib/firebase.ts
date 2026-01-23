@@ -1,7 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getVertexAI } from "firebase/vertexai";
 // import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
@@ -16,10 +15,10 @@ const firebaseConfig = {
 
 // Initialize Firebase
 // Initialize Firebase
+// Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
-const vertexAI = getVertexAI(app);
 
 // Analytics (optional, client-side only)
 // let analytics;
@@ -31,4 +30,4 @@ const vertexAI = getVertexAI(app);
 //   });
 // }
 
-export { app, auth, db, vertexAI };
+export { app, auth, db };
