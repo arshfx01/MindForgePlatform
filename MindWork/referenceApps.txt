@@ -1,0 +1,21 @@
+Gamified learning platforms blend game elements with education, and many now integrate AI for personalized adaptive learning paths. Comprehensive lists evolve rapidly, but key examples from 2025-2026 sources include established and AI-enhanced options. [yukaichou](https://yukaichou.com/gamification-examples/top-10-education-gamification-examples/)
+
+## Core Gamified Platforms
+- Duolingo: Language lessons with streaks, leagues, and hearts; AI adapts difficulty. [yukaichou](https://yukaichou.com/gamification-examples/top-10-education-gamification-examples/)
+- Kahoot!: Real-time quizzes with leaderboards and timers. [slideswith](https://slideswith.com/blog/top-gamified-learning-platforms)
+- Classcraft: RPG-style quests for classroom management. [yukaichou](https://yukaichou.com/gamification-examples/top-10-education-gamification-examples/)
+- SoloLearn: Coding tutorials with XP and duels. [yukaichou](https://yukaichou.com/gamification-examples/top-10-education-gamification-examples/)
+- Memrise: Flashcards with memes, points, and spaced repetition. [yukaichou](https://yukaichou.com/gamification-examples/top-10-education-gamification-examples/)
+
+## AI-Integrated Platforms
+- Centrical: AI-curated microlearning with gamified challenges and analytics. [elearningindustry](https://elearningindustry.com/top-gamification-lms-software-learning-management-systems)
+- Docebo: LMS with badges, leaderboards, and AI content recommendations. [educate-me](https://www.educate-me.co/blog/lms-gamification-examples)
+- 360Learning: Collaborative learning with quests and AI-powered peer matching. [elearningindustry](https://elearningindustry.com/top-gamification-lms-software-learning-management-systems)
+- EdApp: Microlearning with gamification and AI branching scenarios. [elearningindustry](https://elearningindustry.com/top-gamification-lms-software-learning-management-systems)
+- SafetyCulture (SC Training): 2026 top pick with AI insights and game-based modules. [training.safetyculture](https://training.safetyculture.com/blog/gamified-learning-platforms/)
+
+## Additional Tools
+- Gimkit: Earnable currency for quizzes with AI question generation. [training.safetyculture](https://training.safetyculture.com/blog/game-based-learning-platforms/)
+- Xperiencify: Course gamification with AI personalization options. [xperiencify](https://xperiencify.com/gamification-tools/)
+- Hurix Digital: Custom e-learning with gamified AI simulations. [training.safetyculture](https://training.safetyculture.com/blog/game-based-learning-platforms/)
+These platforms suit developers building React Native apps, as many offer APIs for integration into offline-first crypto or fintech training tools. [elearningindustry](https://elearningindustry.com/top-gamification-lms-software-learning-management-systems)

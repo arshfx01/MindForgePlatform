@@ -1,0 +1,34 @@
+# MindForge Implementation Plan
+
+## Phase 1: Foundation & Core State (Current Priority)
+- [ ] **Environment Setup**: Create `.env.local` to store secure keys.
+    -   Get **Clerk** keys from [Clerk Dashboard](https://dashboard.clerk.com/).
+    -   Get **Supabase** keys from [Supabase Dashboard](https://supabase.com/dashboard).
+    -   Get **Gemini** API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+- [ ] **Clerk Setup**: Install `@clerk/nextjs`, configure `middleware.ts`, and add `ClerkProvider` in `app/layout.tsx`.
+- [ ] **Supabase Integration**: Configure Supabase client in `services/supabase/client.ts` to use Clerk JWT.
+- [ ] **State Management**: Create `store/gameStore.ts` using **Zustand** (with separate slices if needed).
+
+## Phase 2: The Dashboard ("Progression Hub")
+- [ ] **Skill Radar**: Implement a radar chart (using Recharts or similar) for Logic, Flexibility, Ethics.
+- [ ] **Saga Map**: Create a visual node-based map for scenario selection (Level 1-5, 6-15, etc.).
+- [ ] **Streak Heatmap**: visual component for daily activity.
+
+## Phase 3: The Arena ("Gameplay Loop")
+- [ ] **Scenario UI**: Split screen layout (Narrative vs Workspace).
+- [ ] **Markdown Editor**: Distraction-free input area.
+- [ ] **Submission Flow**: Mock the "AI Oracle" response (parsing JSON format from `AI System Prompt.txt`).
+- [ ] **Feedback Display**: "Thinking..." animation, Score Gauge, Fallacy Badges.
+
+## Phase 4: Gamification Logic
+- [ ] **XP Calculation**: Implement the logic: Base * (Score * 2) + Streak Bonus.
+- [ ] **Badges**: System to award "Fallacy Hunter", "Devil's Advocate", "The Skeptic".
+- [ ] **Level Up**: Visual celebration and unlocking new "Saga" nodes.
+
+## Phase 5: AI Integration
+- [ ] **Oracle Service**: Create `services/ai/oracle.ts` to encapsulate all Gemini logic.
+- [ ] **Black Swan Logic**: Trigger special events for >90 scores.
+
+## Phase 6: Polish
+- [ ] **Theming**: Enforce "Deep Space" theme (#020617).
+- [ ] **Animations**: Framer Motion for score reveals and transitions.

@@ -1,18 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useGameState } from "@/contexts/GameStateContext";
-import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useGameStore } from "@/store/gameStore";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { UserButton } from "@clerk/nextjs";
 import { Trophy } from "lucide-react";
 import Image from "next/image";
 
 const XP_PER_LEVEL = 1000;
 
+import { EnergyBar } from "@/components/dashboard/EnergyBar";
+
 export function Navbar() {
-  const { gameState } = useGameState();
-  const currentLevelXP = gameState.xp % XP_PER_LEVEL;
+  const { xp, level, energy } = useGameStore();
+  const currentLevelXP = xp % XP_PER_LEVEL;
   const progressToNextLevel = (currentLevelXP / XP_PER_LEVEL) * 100;
 
   return (
@@ -31,6 +33,8 @@ export function Navbar() {
           </Link>
 
           <div className="flex items-center gap-6">
+            <EnergyBar />
+
             <Link
               href="/leaderboard"
               className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
@@ -41,7 +45,7 @@ export function Navbar() {
 
             <div className="flex items-center gap-3">
               <Badge variant="secondary" className="text-sm">
-                Level {gameState.level}
+                Level {level}
               </Badge>
               <div className="w-32">
                 <Progress value={progressToNextLevel} className="h-2" />
@@ -51,11 +55,7 @@ export function Navbar() {
               </span>
             </div>
 
-            <Avatar>
-              <AvatarFallback className="bg-primary text-primary-foreground">
-                U
-              </AvatarFallback>
-            </Avatar>
+            <UserButton afterSignOutUrl="/" />
           </div>
         </div>
       </div>
