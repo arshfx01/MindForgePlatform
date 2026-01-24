@@ -9,6 +9,8 @@ import { SagaMap } from "@/components/dashboard/SagaMap";
 import { useGameStore } from "@/store/gameStore";
 import { Flame, Star, Trophy, Loader2 } from "lucide-react";
 import { EnergyBar } from "@/components/dashboard/EnergyBar";
+import { Button } from "@/components/ui/button";
+
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -59,21 +61,22 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Stats */}
-        <div className="flex gap-4">
-          <div className="flex items-center gap-2 bg-card px-4 py-2 rounded-full border shadow-sm">
-            <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-            <span className="font-mono font-bold">{xp} XP</span>
+        <div className="flex flex-wrap gap-3">
+          <div className="flex items-center gap-2 bg-background border border-border px-4 py-2 rounded-full shadow-sm">
+            <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+            <span className="font-bold text-xs tracking-tight">{xp} XP</span>
           </div>
-          <div className="flex items-center gap-2 bg-card px-4 py-2 rounded-full border shadow-sm">
-            <Trophy className="w-5 h-5 text-primary" />
-            <span className="font-mono font-bold">Lvl {level}</span>
+          <div className="flex items-center gap-2 bg-background border border-border px-4 py-2 rounded-full shadow-sm">
+            <Trophy className="w-4 h-4 text-primary" />
+            <span className="font-bold text-xs tracking-tight">Lvl {level}</span>
           </div>
-          <div className="flex items-center gap-2 bg-card px-4 py-2 rounded-full border shadow-sm">
-            <Flame className="w-5 h-5 text-orange-500 fill-orange-500" />
-            <span className="font-mono font-bold">{streak} Day Streak</span>
+          <div className="flex items-center gap-2 bg-background border border-border px-4 py-2 rounded-full shadow-sm">
+            <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
+            <span className="font-bold text-xs tracking-tight">{streak} Day Streak</span>
           </div>
           <EnergyBar />
         </div>
+
       </header>
 
       {/* Main Grid */}
@@ -88,19 +91,20 @@ export default function DashboardPage() {
           <SkillRadar />
 
           {/* Daily Dilemma Teaser */}
-          <div className="bg-primary/5 border border-primary/20 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-            <h3 className="font-semibold text-primary mb-2 flex items-center gap-2">
-              <Star className="w-4 h-4" /> Daily Dilemma
+          <div className="bg-primary/[0.03] border border-primary/10 rounded-[2rem] p-8 shadow-sm hover:shadow-md transition-all group">
+            <h3 className="font-bold text-primary mb-3 flex items-center gap-2 uppercase text-[10px] tracking-[0.2em]">
+              <Star className="w-3.5 h-3.5 fill-primary" /> Daily Dilemma
             </h3>
-            <p className="text-sm text-foreground/80 mb-4 font-medium italic">
+            <p className="text-base text-foreground font-semibold mb-6 leading-relaxed">
               &quot;Is it ethical to tax autonomous agents that generate economic value?&quot;
             </p>
-            <Link href="/arena">
-              <button className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-bold hover:brightness-110 transition-all active:scale-[0.98] shadow-lg">
+            <Link href="/arena" className="block w-full">
+              <Button className="w-full font-bold shadow-lg shadow-primary/10 group-hover:shadow-primary/20 transition-all font-sans" size="lg">
                 Enter Arena (+2x XP)
-              </button>
+              </Button>
             </Link>
           </div>
+
         </div>
       </div>
     </main>

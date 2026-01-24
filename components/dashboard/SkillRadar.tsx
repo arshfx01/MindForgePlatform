@@ -21,13 +21,14 @@ export function SkillRadar() {
     ];
 
     return (
-        <div className="w-full h-[300px] flex flex-col items-center justify-center p-4 bg-card rounded-xl border border-border shadow-sm">
-            <h3 className="text-lg font-semibold mb-4">Cognitive Profile</h3>
+        <div className="w-full h-[320px] flex flex-col items-center justify-center p-8 bg-white rounded-[2rem] border border-border/40 shadow-sm">
+            <h3 className="text-xs font-bold mb-6 uppercase tracking-[0.2em] text-muted-foreground/60">Cognitive Profile</h3>
             <div className="h-full w-full">
-                <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[250px]">
+                <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[220px]">
                     <RadarChart data={data}>
-                        <PolarGrid className="fill-[--muted]/20" />
-                        <PolarAngleAxis dataKey="subject" />
+                        <PolarGrid className="stroke-border/50" />
+                        <PolarAngleAxis dataKey="subject" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10, fontWeight: 600 }} />
+
                         <Radar
                             name="Skill Level"
                             dataKey="value"

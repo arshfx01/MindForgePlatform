@@ -47,7 +47,7 @@ export function GameOverlay() {
                         initial={{ scale: 0, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 1.5, opacity: 0 }}
-                        className="bg-background/80 backdrop-blur-md p-12 rounded-full border-4 border-orange-500 shadow-[0_0_50px_rgba(249,115,22,0.5)] flex flex-col items-center gap-4 pointer-events-auto"
+                        className="bg-background/80 backdrop-blur-md p-8 md:p-12 rounded-full border-4 border-orange-500 shadow-[0_0_50px_rgba(249,115,22,0.5)] flex flex-col items-center gap-4 pointer-events-auto text-center"
                     >
                         <motion.div
                             animate={{
@@ -56,12 +56,12 @@ export function GameOverlay() {
                             }}
                             transition={{ repeat: Infinity, duration: 1 }}
                         >
-                            <Flame className="w-24 h-24 text-orange-500 fill-orange-500" />
+                            <Flame className="w-16 h-16 md:w-24 md:h-24 text-orange-500 fill-orange-500" />
                         </motion.div>
-                        <h2 className="text-4xl font-black text-orange-500 uppercase tracking-tighter">
+                        <h2 className="text-2xl md:text-4xl font-black text-orange-500 uppercase tracking-tighter">
                             {streak} DAY STREAK!
                         </h2>
-                        <p className="text-muted-foreground font-medium">Cognitive Momentum Maintained</p>
+                        <p className="text-sm md:text-base text-muted-foreground font-medium">Cognitive Momentum Maintained</p>
                     </motion.div>
                 )}
             </AnimatePresence>

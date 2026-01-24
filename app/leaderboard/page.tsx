@@ -30,26 +30,26 @@ export default function LeaderboardPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 min-h-screen">
+    <div className="container mx-auto px-4 md:px-8 py-8 min-h-screen">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2 text-white">Leaderboard</h1>
+        <h1 className="text-4xl font-bold mb-2">Leaderboard</h1>
         <p className="text-muted-foreground">Top thinkers in the MindForge community</p>
       </div>
 
-      <Card className="bg-card/50 backdrop-blur border-border/50">
-        <CardHeader>
-          <CardTitle className="text-white">Global Rankings</CardTitle>
-          <CardDescription>Compete with the best critical thinkers</CardDescription>
+      <Card className="bg-white border-border/40 shadow-sm rounded-[2rem] overflow-hidden">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-xl font-bold tracking-tight">Global Rankings</CardTitle>
+          <CardDescription className="text-xs uppercase tracking-widest font-medium">Top thinkers in the MindForge community</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-4 px-4 text-muted-foreground font-medium uppercase text-xs tracking-wider">Rank</th>
-                  <th className="text-left py-4 px-4 text-muted-foreground font-medium uppercase text-xs tracking-wider">User ID</th>
-                  <th className="text-left py-4 px-4 text-muted-foreground font-medium uppercase text-xs tracking-wider">Level</th>
-                  <th className="text-right py-4 px-4 text-muted-foreground font-medium uppercase text-xs tracking-wider">Total XP</th>
+                <tr className="border-b border-border/40">
+                  <th className="text-left py-5 px-6 text-muted-foreground font-bold uppercase text-[10px] tracking-widest">Rank</th>
+                  <th className="text-left py-5 px-6 text-muted-foreground font-bold uppercase text-[10px] tracking-widest">User Profile</th>
+                  <th className="text-left py-5 px-6 text-muted-foreground font-bold uppercase text-[10px] tracking-widest">Level</th>
+                  <th className="text-right py-5 px-6 text-muted-foreground font-bold uppercase text-[10px] tracking-widest">Total XP</th>
                 </tr>
               </thead>
               <tbody>
@@ -58,29 +58,34 @@ export default function LeaderboardPage() {
                   return (
                     <tr
                       key={user.id}
-                      className="border-b border-border/50 hover:bg-card/30 transition-colors"
+                      className="group border-b border-border/30 last:border-0 hover:bg-muted/30 transition-all"
                     >
-                      <td className="py-4 px-4">
+                      <td className="py-5 px-6">
                         <div className="flex items-center gap-3">
-                          {rank === 1 && <Trophy className="h-5 w-5 text-yellow-500" />}
-                          {rank === 2 && <Medal className="h-5 w-5 text-emerald-300" />}
-                          {rank === 3 && <Award className="h-5 w-5 text-amber-600" />}
-                          {rank > 3 && <Award className="h-5 w-5 text-muted-foreground/40" />}
-                          <span className="font-semibold text-white">#{rank}</span>
+                          {rank === 1 && <Trophy className="h-5 w-5 text-amber-500" />}
+                          {rank === 2 && <Medal className="h-5 w-5 text-gray-400" />}
+                          {rank === 3 && <Award className="h-5 w-5 text-amber-700" />}
+                          {rank > 3 && <div className="h-5 w-5 rounded-full bg-muted/50 flex items-center justify-center text-[10px] font-bold text-muted-foreground">#</div>}
+                          <span className="font-bold text-sm tracking-tight text-foreground">#{rank}</span>
                         </div>
                       </td>
-                      <td className="py-4 px-4">
-                        <span className="font-medium text-white">
-                          Analyst_{user.id?.slice(-4) || '??'}
-                        </span>
+                      <td className="py-5 px-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/5 flex items-center justify-center font-bold text-[10px] text-primary border border-primary/10 tracking-widest">
+                            MF
+                          </div>
+                          <span className="font-bold text-sm text-foreground tracking-tight">
+                            Analyst_{user.id?.slice(-4) || '??'}
+                          </span>
+                        </div>
                       </td>
-                      <td className="py-4 px-4">
-                        <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/20">
-                          Lvl {user.level || 1}
+                      <td className="py-5 px-6">
+                        <Badge variant="secondary" className="bg-primary/[0.03] text-primary border-primary/10 font-bold text-[10px] px-3">
+                          LEVEL {user.level || 1}
                         </Badge>
                       </td>
-                      <td className="py-4 px-4 text-right">
-                        <span className="font-mono font-bold text-primary">{(user.xp || 0).toLocaleString()}</span>
+                      <td className="py-5 px-6 text-right">
+                        <span className="font-mono font-bold text-sm text-primary tracking-tighter">{(user.xp || 0).toLocaleString()}</span>
                       </td>
                     </tr>
                   )
@@ -90,6 +95,7 @@ export default function LeaderboardPage() {
           </div>
         </CardContent>
       </Card>
+
     </div>
   )
 }

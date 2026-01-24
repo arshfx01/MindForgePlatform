@@ -141,11 +141,12 @@ export default function ArenaPage() {
             <CardDescription>Read the scenario carefully</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="prose prose-invert max-w-none">
+            <div className="prose prose-neutral max-w-none">
               <p className="text-foreground/80 whitespace-pre-line leading-relaxed">
                 {scenario.narrative}
               </p>
             </div>
+
             <div className="mt-6">
               <h4 className="font-semibold mb-3 text-primary">Key Variables</h4>
               <ul className="space-y-2">
@@ -175,9 +176,10 @@ export default function ArenaPage() {
               value={analysis}
               onChange={(e) => setAnalysis(e.target.value)}
               placeholder="Type your analysis here... Consider the key variables, identify logical fallacies, ethical implications, and propose a reasoned conclusion."
-              className="w-full h-96 p-4 bg-card border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+              className="w-full h-96 p-6 bg-muted/30 border border-border rounded-2xl text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none shadow-inner"
             />
           </CardContent>
+
         </Card>
       </div>
 
@@ -185,12 +187,14 @@ export default function ArenaPage() {
         <Button
           onClick={handleSubmit}
           disabled={!analysis.trim() || isSubmitting}
+          loading={isSubmitting}
           size="lg"
           className="px-8"
         >
-          {isSubmitting ? "Submitting to AI Oracle..." : "Submit to AI Oracle"}
+          Submit to AI Oracle
         </Button>
       </div>
+
 
       <AnimatePresence>
         {showOverlay && feedback && (
@@ -202,12 +206,13 @@ export default function ArenaPage() {
             onClick={() => setShowOverlay(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-card border border-border rounded-lg p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-card border border-border rounded-[2.5rem] p-10 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative"
             >
+
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-3xl font-bold mb-4">
@@ -236,15 +241,14 @@ export default function ArenaPage() {
                           feedback.score >= 80
                             ? "#10b981"
                             : feedback.score >= 60
-                            ? "#f59e0b"
-                            : "#ef4444"
+                              ? "#f59e0b"
+                              : "#ef4444"
                         }
                         strokeWidth="8"
                         strokeLinecap="round"
                         strokeDasharray={`${2 * Math.PI * 45}`}
-                        strokeDashoffset={`${
-                          2 * Math.PI * 45 * (1 - feedback.score / 100)
-                        }`}
+                        strokeDashoffset={`${2 * Math.PI * 45 * (1 - feedback.score / 100)
+                          }`}
                         className="transition-all duration-1000"
                       />
                     </svg>

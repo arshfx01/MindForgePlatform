@@ -2,13 +2,14 @@
 
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
-import { ArenaSplitLayout } from "@/components/arena/ArenaSplitLayout";
+import { ArenaImmersiveLayout } from "@/components/arena/ArenaImmersiveLayout";
 import { OracleFeedback, type Evaluation } from "@/components/arena/OracleFeedback";
 import { useGameStore } from "@/store/gameStore";
 import { generateScenario, evaluateSubmission } from "@/services/ai/oracle";
-import { Loader2, Send, BrainCircuit } from "lucide-react";
+import { Loader2, Send, BrainCircuit, Play } from "lucide-react";
 import { saveScenarioResult } from "@/app/actions/game";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { BackButton } from "@/components/ui/BackButton";
 
 function ArenaContent() {
     const searchParams = useSearchParams();
@@ -105,99 +106,145 @@ function ArenaContent() {
 
     if (!hasStarted) {
         return (
-            <div className={`flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] p-8 ${isFullscreen ? "fixed inset-0 z-50 bg-background" : ""}`}>
-                <div className="max-w-md w-full space-y-8 text-center">
-                    <div className="space-y-2">
-                        <h1 className="text-4xl font-black tracking-tighter uppercase italic">The Arena</h1>
-                        <p className="text-muted-foreground">High-stakes cognitive evaluation protocol. Level {activeLevel}.</p>
+            <div className={`relative flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] p-8 overflow-hidden bg-background ${isFullscreen ? "fixed inset-0 z-50 bg-background" : ""}`}>
+                {/* Background ambient light */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
+
+                <div className="absolute top-4 left-4 z-20">
+                    <BackButton />
+                </div>
+
+                <div className="max-w-2xl w-full text-center space-y-12 relative z-10">
+                    <div className="space-y-4">
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-6xl md:text-8xl font-black tracking-tighter uppercase italic text-transparent bg-clip-text bg-gradient-to-r from-primary via-white to-primary text-glow drop-shadow-2xl"
+                        >
+                            The Arena
+                        </motion.h1>
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.2 }}
+                            className="text-lg text-muted-foreground font-mono tracking-widest uppercase"
+                        >
+                            Cognitive Evaluation Protocol • Level {activeLevel}
+                        </motion.p>
                     </div>
 
-                    <div className="bg-card border-2 border-primary/20 p-8 rounded-3xl shadow-2xl space-y-6">
-                        <div className="flex justify-around text-sm font-mono uppercase tracking-widest text-muted-foreground">
-                            <div className="flex flex-col items-center">
-                                <span className="text-primary font-bold">5:00</span>
-                                <span className="text-xs uppercase">Limit</span>
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.4 }}
+                        className="glass-card p-10 rounded-[32px] border-primary/20 space-y-8"
+                    >
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8 text-center">
+                            <div className="flex flex-col items-center space-y-1 md:space-y-2">
+                                <span className="text-3xl md:text-4xl font-black text-primary tabular-nums">5:00</span>
+                                <span className="text-[10px] md:text-xs uppercase tracking-widest text-muted-foreground font-bold">Time Limit</span>
                             </div>
-                            <div className="flex flex-col items-center border-x border-border px-8">
-                                <span className="text-primary font-bold">-{1}</span>
-                                <span className="text-xs uppercase">Energy</span>
+                            <div className="flex flex-col items-center space-y-1 md:space-y-2 border-y sm:border-y-0 sm:border-x border-white/10 py-4 sm:py-0">
+                                <span className="text-3xl md:text-4xl font-black text-white tabular-nums">10</span>
+                                <span className="text-[10px] md:text-xs uppercase tracking-widest text-muted-foreground font-bold">Energy Cost</span>
                             </div>
-                            <div className="flex flex-col items-center">
-                                <span className="text-primary font-bold">2X</span>
-                                <span className="text-xs uppercase">Multi</span>
+                            <div className="flex flex-col items-center space-y-1 md:space-y-2">
+                                <span className="text-3xl md:text-4xl font-black text-secondary tabular-nums">2X</span>
+                                <span className="text-[10px] md:text-xs uppercase tracking-widest text-muted-foreground font-bold">XP Multiplier</span>
                             </div>
                         </div>
 
                         <button
                             onClick={startScenario}
-                            className="w-full py-6 bg-primary text-primary-foreground rounded-2xl font-black text-xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(var(--primary),0.3)] group"
+                            className="w-full group relative py-6 bg-primary text-primary-foreground rounded-2xl font-black text-2xl overflow-hidden shadow-[0_0_40px_rgba(var(--primary),0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
                         >
-                            INITIALIZE PROTOCOL
+                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                            <span className="relative z-10 flex items-center justify-center gap-3">
+                                <Play className="w-8 h-8 fill-current" />
+                                INITIALIZE PROTOCOL
+                            </span>
                         </button>
-
-                        <button
-                            onClick={() => setIsFullscreen(!isFullscreen)}
-                            className="text-xs text-muted-foreground hover:text-primary underline"
-                        >
-                            {isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen Mode"}
-                        </button>
-                    </div>
+                    </motion.div>
                 </div>
             </div>
         );
     }
 
     return (
-        <main className={`flex flex-col ${isFullscreen ? "fixed inset-0 z-50 bg-background h-screen" : "h-[calc(100vh-4rem)]"}`}>
-            <div className="bg-muted/50 p-2 flex justify-between items-center px-6 border-b border-border">
+        <main className={`flex flex-col bg-background ${isFullscreen ? "fixed inset-0 z-50 h-screen" : "min-h-[calc(100vh-4rem)] h-auto lg:h-[calc(100vh-4rem)]"}`}>
+            <header className="h-16 px-6 flex items-center justify-between border-b border-white/5 bg-background/50 backdrop-blur-md z-20 sticky top-0 lg:static">
                 <div className="flex items-center gap-4">
-                    <span className="text-xs font-mono font-bold text-primary">PROTOCOL STATUS: ACTIVE</span>
-                    <div className="h-2 w-32 bg-secondary rounded-full overflow-hidden">
-                        <motion.div
-                            className="h-full bg-primary"
-                            initial={{ width: "100%" }}
-                            animate={{ width: `${(timeLeft / 300) * 100}%` }}
-                        />
+                    <button
+                        onClick={() => setHasStarted(false)}
+                        className="text-muted-foreground hover:text-white transition-colors"
+                    >
+                        <span className="text-xs font-mono font-bold uppercase tracking-widest hidden sm:inline">Abort Mission</span>
+                        <span className="text-xs font-mono font-bold uppercase tracking-widest sm:hidden">Exit</span>
+                    </button>
+
+                    <div className="h-4 w-[1px] bg-white/10" />
+
+                    <div className="flex items-center gap-3">
+                        <span className="text-xs font-mono font-bold text-primary animate-pulse">ACTIVE PROTOCOL</span>
+                        <div className="h-1.5 w-32 bg-secondary/20 rounded-full overflow-hidden">
+                            <motion.div
+                                className="h-full bg-primary box-shadow-[0_0_10px_rgba(var(--primary),1)]"
+                                initial={{ width: "100%" }}
+                                animate={{ width: `${(timeLeft / 300) * 100}%` }}
+                            />
+                        </div>
                     </div>
                 </div>
+
                 <div className="flex items-center gap-6">
-                    <div className="text-2xl font-mono font-black text-primary tabular-nums">
+                    <div className="text-3xl font-mono font-black text-white tabular-nums tracking-tight">
                         {formatTime(timeLeft)}
                     </div>
                     <button
                         onClick={() => setIsFullscreen(!isFullscreen)}
-                        className="p-1 hover:bg-muted rounded"
+                        className="p-2 hover:bg-white/5 rounded-lg text-muted-foreground hover:text-white transition-colors"
                     >
-                        <BrainCircuit className="w-5 h-5" />
+                        <BrainCircuit className="w-6 h-6" />
                     </button>
                 </div>
-            </div>
+            </header>
 
-            <ArenaSplitLayout
+            <ArenaImmersiveLayout
                 scenario={
-                    <div className="space-y-4">
-                        {loading ? (
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                                <Loader2 className="animate-spin text-primary" />
-                                <div className="flex flex-col">
-                                    <span className="font-semibold text-foreground">Consulting the Oracle...</span>
-                                    <span className="text-xs">Assembling Level {activeLevel} Crisis Data</span>
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={loading ? "loading" : "content"}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="space-y-6"
+                        >
+                            {loading ? (
+                                <div className="flex flex-col items-center justify-center h-[300px] gap-4 text-muted-foreground">
+                                    <div className="relative">
+                                        <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse" />
+                                        <Loader2 className="w-12 h-12 animate-spin text-primary relative z-10" />
+                                    </div>
+                                    <div className="flex flex-col items-center gap-1">
+                                        <span className="font-bold text-lg text-white font-mono tracking-widest uppercase">Consulting Oracle</span>
+                                        <span className="text-xs text-primary/80 uppercase tracking-widest">Retrieving Level {activeLevel} Data...</span>
+                                    </div>
                                 </div>
-                            </div>
-                        ) : (
-                            scenarioText.split("\n").map((line, i) => {
-                                if (line.startsWith("# ")) return <h1 key={i} className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-foreground mb-4">{line.replace("# ", "")}</h1>
-                                if (line.startsWith("**")) return <p key={i} className="font-bold mt-4 text-primary/80">{line.replace(/\*\*/g, "")}</p>
-                                if (line.trim().startsWith("-")) return <li key={i} className="ml-4 list-disc opacity-90">{line.replace("-", "").trim()}</li>
-                                return <p key={i} className="leading-relaxed opacity-90 mb-2">{line}</p>
-                            })
-                        )}
-                    </div>
+                            ) : (
+                                scenarioText.split("\n").map((line, i) => {
+                                    if (line.startsWith("# ")) return <h1 key={i} className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary to-white mb-6 tracking-tight">{line.replace("# ", "")}</h1>
+                                    if (line.startsWith("**")) return <p key={i} className="font-bold mt-6 text-primary text-lg">{line.replace(/\*\*/g, "")}</p>
+                                    if (line.trim().startsWith("-")) return <li key={i} className="ml-4 list-disc text-muted-foreground marker:text-primary">{line.replace("-", "").trim()}</li>
+                                    return <p key={i} className="leading-relaxed text-muted-foreground text-lg mb-3">{line}</p>
+                                })
+                            )}
+                        </motion.div>
+                    </AnimatePresence>
                 }
                 editor={
                     <div className="h-full flex flex-col gap-4">
                         {evaluation ? (
-                            <div className="flex-1 overflow-auto custom-scrollbar">
+                            <div className="flex-1 overflow-auto custom-scrollbar p-2">
                                 <OracleFeedback evaluation={evaluation} />
                                 <button
                                     onClick={() => {
@@ -205,34 +252,39 @@ function ArenaContent() {
                                         setInput("");
                                         setHasStarted(false);
                                     }}
-                                    className="mt-6 w-full py-4 bg-secondary text-secondary-foreground rounded-xl hover:brightness-110 transition-all font-bold border border-secondary shadow-lg active:scale-[0.98]"
+                                    className="mt-6 w-full py-4 bg-secondary text-secondary-foreground rounded-xl hover:brightness-110 transition-all font-bold border border-secondary shadow-[0_0_20px_rgba(var(--secondary),0.4)] active:scale-[0.98] uppercase tracking-widest text-sm"
                                 >
                                     Transmit New Inquiry
                                 </button>
                             </div>
                         ) : (
                             <>
-                                <div className="flex-1 relative">
+                                <div className="flex-1 relative group">
                                     <textarea
-                                        className="w-full h-full bg-transparent resize-none focus:outline-none font-mono text-sm leading-relaxed p-4 border border-border/50 rounded-xl bg-muted/5 focus:border-primary/50 transition-colors"
-                                        placeholder="Draft your ethical defense or logical resolution here... The Oracle awaits."
+                                        className="w-full h-full bg-black/40 resize-none focus:outline-none font-mono text-sm leading-relaxed p-6 border border-white/5 rounded-xl text-primary/90 focus:border-primary/50 focus:bg-black/60 transition-all placeholder:text-white/20"
+                                        placeholder="> AWAITING INPUT...
+> Draft your ethical defense or logical resolution here."
                                         value={input}
                                         onChange={(e) => setInput(e.target.value)}
+                                        spellCheck={false}
                                     />
-                                    <div className="absolute top-2 right-2 opacity-20 pointer-events-none">
-                                        <BrainCircuit className="w-12 h-12" />
+                                    <div className="absolute bottom-4 right-4 opacity-10 group-focus-within:opacity-40 transition-opacity pointer-events-none">
+                                        <BrainCircuit className="w-24 h-24 text-primary" />
                                     </div>
                                 </div>
-                                <div className="flex justify-end pt-4 border-t border-border">
+                                <div className="flex justify-between items-center pt-4 border-t border-white/5 px-2">
+                                    <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
+                                        {input.length} chars
+                                    </span>
                                     <button
                                         onClick={handleSubmit}
                                         disabled={isSubmitting || !input.trim() || timeLeft <= 0}
-                                        className="flex items-center gap-3 bg-primary text-primary-foreground px-8 py-3 rounded-xl font-bold hover:brightness-110 disabled:opacity-50 transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)] active:scale-[0.98]"
+                                        className="flex items-center gap-3 bg-primary text-primary-foreground px-8 py-3 rounded-xl font-bold hover:brightness-110 disabled:opacity-50 disabled:grayscale transition-all shadow-[0_0_20px_rgba(var(--primary),0.25)] active:scale-[0.98]"
                                     >
                                         {isSubmitting ? (
-                                            <><Loader2 className="w-5 h-5 animate-spin" /> Calibrating Analytics...</>
+                                            <><Loader2 className="w-5 h-5 animate-spin" /> PROCESSING...</>
                                         ) : (
-                                            <><Send className="w-5 h-5" /> Execute Protocol</>
+                                            <><Send className="w-5 h-5" /> EXECUTE</>
                                         )}
                                     </button>
                                 </div>

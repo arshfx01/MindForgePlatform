@@ -18,6 +18,12 @@ const config = {
       },
     },
     extend: {
+      fontFamily: {
+        // Inter as the primary font
+        sans: ["var(--font-inter)", "ui-sans-serif", "system-ui"],
+        // Fallback to system mono for code elements
+        mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

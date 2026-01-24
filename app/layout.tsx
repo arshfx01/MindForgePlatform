@@ -1,19 +1,20 @@
 import type { Metadata } from "next";
-import { Space_Grotesk } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { ClerkProvider } from "@clerk/nextjs";
 import { GameOverlay } from "@/components/overlays/GameOverlay";
 
-const spaceGrotesk = Space_Grotesk({
+// Loading Inter for all weights needed for gamification
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  variable: "--font-space-grotesk",
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
   title: "MindForge - Gamified AI Platform for Critical Thinking",
-  description:
-    "Level up your critical thinking skills through gamified scenarios",
+  description: "Level up your critical thinking skills through gamified scenarios",
 };
 
 export default function RootLayout({
@@ -23,10 +24,15 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en" className="dark">
-        <body className={`${spaceGrotesk.className} bg-background text-foreground antialiased`}>
+      <html lang="en" className="light">
+        {/* We apply the font-sans class globally here */}
+        <body
+          className={`${inter.variable} font-sans bg-background text-foreground antialiased`}
+        >
           <Navbar />
-          {children}
+          <main className="min-h-screen">
+            {children}
+          </main>
           <GameOverlay />
         </body>
       </html>
