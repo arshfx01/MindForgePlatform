@@ -5,6 +5,7 @@ import { getLeaderboard } from "@/app/actions/game"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Trophy, Medal, Award, Loader2 } from "lucide-react"
+import { BackButton } from "@/components/ui/BackButton"
 
 export default function LeaderboardPage() {
   const [data, setData] = useState<any[]>([])
@@ -23,18 +24,22 @@ export default function LeaderboardPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-screen items-center justify-center bg-[#fafafa]">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto px-4 md:px-8 py-8 min-h-screen">
+    <div className="container mx-auto px-4 md:px-8 py-8 min-h-screen bg-[#fafafa]">
       <div className="mb-8">
+        <div className="mb-6">
+          <BackButton />
+        </div>
         <h1 className="text-4xl font-bold mb-2">Leaderboard</h1>
         <p className="text-muted-foreground">Top thinkers in the MindForge community</p>
       </div>
+
 
       <Card className="bg-white border-border/40 shadow-sm rounded-[2rem] overflow-hidden">
         <CardHeader className="pb-2">

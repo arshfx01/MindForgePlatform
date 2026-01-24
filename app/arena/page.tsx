@@ -76,8 +76,8 @@ function ArenaContent() {
             setScenarioText(text);
             setLoading(false);
             setHasStarted(true);
-        } catch (err) {
-            setError("Failed to establish secure logic link. Please attempt reconnection.");
+        } catch (err: any) {
+            setError(err.message || "Failed to establish secure logic link. Please attempt reconnection.");
         } finally {
             setIsInitializing(false);
         }
@@ -115,8 +115,8 @@ function ArenaContent() {
                     }
                 });
             }
-        } catch (err) {
-            setError("Transmission error during evaluation. Logic engine stalled.");
+        } catch (err: any) {
+            setError(err.message || "Transmission error during evaluation. Logic engine stalled.");
         } finally {
             setIsSubmitting(false);
         }

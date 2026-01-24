@@ -37,20 +37,33 @@ export async function initializeUser() {
             });
         }
 
-        // Check energy refill
+        // Improved Energy Refill Logic
+        // 1 unit every 4 hours, up to 3
         if (profile && (profile.energy ?? 0) < 3) {
             const lastReplenish = profile.energyLastReplenish
                 ? (profile.energyLastReplenish as any).toDate ? (profile.energyLastReplenish as any).toDate() : new Date((profile.energyLastReplenish as any))
                 : null;
 
-            if (!lastReplenish || (new Date().getTime() - lastReplenish.getTime() > 10 * 60 * 60 * 1000)) {
-                await UserService.updateUserProfile(userId, {
-                    energy: 3,
-                    energyLastReplenish: new Date()
-                });
+            const now = new Date();
+            if (!lastReplenish) {
+                await UserService.updateUserProfile(userId, { energy: 3, energyLastReplenish: now });
                 profile.energy = 3;
+            } else {
+                const hoursPassed = (now.getTime() - lastReplenish.getTime()) / (1000 * 60 * 60);
+                const unitsToRefill = Math.floor(hoursPassed / 4);
+
+                if (unitsToRefill > 0) {
+                    const newEnergy = Math.min(3, (profile.energy ?? 0) + unitsToRefill);
+                    await UserService.updateUserProfile(userId, {
+                        energy: newEnergy,
+                        // Update replenish time to "reset" the timer for the next unit if not full
+                        energyLastReplenish: newEnergy === 3 ? now : new Date(lastReplenish.getTime() + unitsToRefill * 4 * 60 * 60 * 1000)
+                    });
+                    profile.energy = newEnergy;
+                }
             }
         }
+
 
         return profile;
     } catch (error) {
@@ -167,9 +180,16 @@ export async function consumeEnergy(userId: string) {
         const profile = await UserService.getUserProfile(userId);
         if (!profile || (profile.energy ?? 0) <= 0) return false;
 
-        await UserService.updateUserProfile(userId, {
+        const updates: any = {
             energy: (profile.energy ?? 0) - 1
-        });
+        };
+
+        // If energy was full, start the replenish timer
+        if (profile.energy === 3) {
+            updates.energyLastReplenish = new Date();
+        }
+
+        await UserService.updateUserProfile(userId, updates);
         return true;
     } catch (e) {
         console.error("Consume energy failed", e);
@@ -177,9 +197,24 @@ export async function consumeEnergy(userId: string) {
     }
 }
 
+
 export async function getLeaderboard(limit = 10) {
-    // Basic implementation - Firestore requires an Index for sorting
-    // We'll return empty for now or fetch all users locally (inefficient strictly but ok for small apps)
-    // Real implementation should be in GamificationService
-    return [];
+    try {
+        return await UserService.getTopUsers(limit);
+    } catch (e) {
+        console.error("Leaderboard fetch failed", e);
+        return [];
+    }
 }
+
+export async function getWeeklyActivity() {
+    const { userId } = await auth();
+    if (!userId) return [];
+    try {
+        return await GamificationService.getRecentActivity(userId, 7);
+    } catch (e) {
+        console.error("Weekly activity fetch failed", e);
+        return [];
+    }
+}
+

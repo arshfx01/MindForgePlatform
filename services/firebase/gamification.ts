@@ -66,5 +66,25 @@ export const GamificationService = {
         };
         const docRef = await addDoc(collection(db, SCENARIOS_COLLECTION), data);
         return { ...scenarioData, id: docRef.id, createdAt: new Date().toISOString() };
+    },
+
+    async getRecentActivity(userId: string, days = 7) {
+        const { query, collection, where, orderBy, getDocs, Timestamp } = await import("firebase/firestore");
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - days);
+
+        const q = query(
+            collection(db, RESULTS_COLLECTION),
+            where("userId", "==", userId),
+            where("createdAt", ">=", Timestamp.fromDate(cutoff)),
+            orderBy("createdAt", "desc")
+        );
+        const querySnapshot = await getDocs(q);
+
+        return querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...convertTimestamps(doc.data())
+        })) as ScenarioResult[];
     }
 };
+

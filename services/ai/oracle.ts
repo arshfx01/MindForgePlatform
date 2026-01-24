@@ -1,54 +1,85 @@
 "use server";
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import Groq from "groq-sdk";
 
-const apiKey = process.env.GEMINI_API_KEY;
+const geminiApiKey = process.env.GEMINI_API_KEY;
+const groqApiKey = process.env.GROQ_API_KEY;
 
-if (!apiKey) {
-    console.error("CRITICAL: GEMINI_API_KEY is not set.");
+if (!geminiApiKey) {
+    console.error("[Oracle] GEMINI_API_KEY is not set.");
+}
+if (!groqApiKey) {
+    console.warn("[Oracle] GROQ_API_KEY is not set. Falling back to Gemini only.");
 }
 
-const genAI = new GoogleGenerativeAI(apiKey || "INVALID");
+const genAI = new GoogleGenerativeAI(geminiApiKey || "INVALID");
+const groq = groqApiKey ? new Groq({ apiKey: groqApiKey }) : null;
 
-// Priority List: Standard 2.0 Flash -> Lite -> 1.5 Fallback
-const MODEL_PRIORITY = [
-    "gemini-2.0-flash",
-    "gemini-2.0-flash-lite-preview-02-05",
-    "gemini-flash-latest"
+// Groq Priority List
+const GROQ_MODELS = [
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
+    "mixtral-8x7b-32768"
 ];
 
-async function generateContentWithRetry(prompt: string, retries = 2, delay = 2000) {
-    for (const modelName of MODEL_PRIORITY) {
-        const currentModel = genAI.getGenerativeModel({ model: modelName });
-        console.log(`[Oracle] Attempting generation with model: ${modelName}`);
+// Gemini Priority List
+const GEMINI_MODELS = [
+    "gemini-1.5-flash",
+    "gemini-2.0-flash-exp",
+    "gemini-1.5-pro",
+];
 
-        for (let i = 0; i < retries; i++) {
+
+async function generateContentWithRetry(prompt: string, retries = 2, delay = 1000) {
+    // Attempt Groq First
+    if (groq) {
+        for (const modelName of GROQ_MODELS) {
             try {
-                return await currentModel.generateContent(prompt);
+                console.log(`[Oracle] Attempting Groq: ${modelName}`);
+                const completion = await groq.chat.completions.create({
+                    messages: [{ role: "user", content: prompt }],
+                    model: modelName,
+                });
+                const content = completion.choices[0]?.message?.content;
+                if (content) {
+                    return { text: () => content };
+                }
             } catch (error: any) {
-                const isRateLimit = error.status === 429 || error.message?.includes('429');
-                const isNotFound = error.status === 404 || error.message?.includes('404');
-
-                if (isNotFound) {
-                    console.warn(`[Oracle] Model ${modelName} not found (404). Skipping to next model...`);
-                    break; // Break retry loop, move to next model
-                }
-
-                if (isRateLimit && i < retries - 1) {
-                    console.warn(`[Oracle] Rate limited on ${modelName}. Retrying in ${delay / 1000}s...`);
+                console.warn(`[Oracle] Groq model ${modelName} failed: ${error.message}`);
+                if (error.status === 429) {
+                    console.warn(`[Oracle] Groq rate limit hit. Waiting...`);
                     await new Promise(res => setTimeout(res, delay));
-                    delay *= 2;
-                    continue;
-                }
-
-                // If it's the last retry for this model, fallback
-                if (i === retries - 1) {
-                    console.error(`[Oracle] Model ${modelName} failed after retries.`);
                 }
             }
         }
     }
-    throw new Error("All AI models failed or rate limited.");
+
+    // Fallback to Gemini
+    if (!geminiApiKey || geminiApiKey === "INVALID") {
+        throw new Error("All AI providers failed. No valid API key found.");
+    }
+
+    for (const modelName of GEMINI_MODELS) {
+        try {
+            const currentModel = genAI.getGenerativeModel({ model: modelName });
+            console.log(`[Oracle] Fallback to Gemini: ${modelName}`);
+
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const result = await currentModel.generateContent(prompt);
+                    return { text: () => result.response.text() };
+                } catch (error: any) {
+                    console.error(`[Oracle] Gemini attempt ${i + 1} failed: ${error.message}`);
+                    if (i < retries - 1) await new Promise(res => setTimeout(res, delay));
+                }
+            }
+        } catch (initError: any) {
+            console.error(`[Oracle] Failed to initialize Gemini model ${modelName}:`, initError.message);
+        }
+    }
+
+    throw new Error("All AI models (Groq & Gemini) failed.");
 }
 
 export interface OnboardingQuestion {
@@ -102,8 +133,7 @@ export async function generateOnboardingQuestions(): Promise<OnboardingQuestion[
 
     try {
         const result = await generateContentWithRetry(prompt);
-        const response = result.response;
-        const text = response.text().replace(/```json/g, "").replace(/```/g, "").trim();
+        const text = result.text().replace(/```json/g, "").replace(/```/g, "").trim();
         const parsed = JSON.parse(text);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
         return FALLBACK_QUESTIONS;
@@ -130,7 +160,7 @@ export async function evaluateOnboarding(answers: { questionId: number, answerIn
 
     try {
         const result = await generateContentWithRetry(prompt);
-        const text = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
+        const text = result.text().replace(/```json/g, "").replace(/```/g, "").trim();
         return JSON.parse(text);
     } catch (e) {
         return { level: 1, stats: { logic: 20, flexibility: 20, ethics: 20 } };
@@ -177,7 +207,7 @@ export async function generateScenario(userLevel: number, stats?: { logic: numbe
 
     try {
         const result = await generateContentWithRetry(prompt);
-        return result.response.text();
+        return result.text();
     } catch (error) {
         console.error("Scenario Gen Error:", error);
         return "# Baseline Test\n**Situation**: The system is recalibrating.\n**The Dilemma**: You must remain sharp without an active trial.\n**The Task**: How do you maintain critical thinking skills daily?";
@@ -213,7 +243,7 @@ export async function evaluateSubmission(scenario: string, userResponse: string)
 
     try {
         const result = await generateContentWithRetry(prompt);
-        const text = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
+        const text = result.text().replace(/```json/g, "").replace(/```/g, "").trim();
         return JSON.parse(text);
     } catch (e) {
         return errorResult;

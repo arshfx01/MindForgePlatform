@@ -112,5 +112,16 @@ export const UserService = {
 
     async updateOnboardingQuestions(userId: string, questions: any) {
         return this.updateUserProfile(userId, { onboardingQuestions: questions });
+    },
+
+    async getTopUsers(limitCount = 10) {
+        const { collection, query, orderBy, limit, getDocs } = await import("firebase/firestore");
+        const q = query(collection(db, COLLECTION_NAME), orderBy("xp", "desc"), limit(limitCount));
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...convertTimestamps(doc.data())
+        })) as UserProfile[];
     }
 };
+

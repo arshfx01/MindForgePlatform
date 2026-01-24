@@ -62,20 +62,23 @@ export default function DashboardPage() {
 
         {/* Quick Stats */}
         <div className="flex flex-wrap gap-3">
-          <div className="flex items-center gap-2 bg-background border border-border px-4 py-2 rounded-full shadow-sm">
+          <Link href="/dashboard/levels" className="flex items-center gap-2 bg-background border border-border px-4 py-2 rounded-full shadow-sm hover:border-primary/30 transition-all">
             <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
             <span className="font-bold text-xs tracking-tight">{xp} XP</span>
-          </div>
-          <div className="flex items-center gap-2 bg-background border border-border px-4 py-2 rounded-full shadow-sm">
+          </Link>
+          <Link href="/dashboard/levels" className="flex items-center gap-2 bg-background border border-border px-4 py-2 rounded-full shadow-sm hover:border-primary/30 transition-all">
             <Trophy className="w-4 h-4 text-primary" />
             <span className="font-bold text-xs tracking-tight">Lvl {level}</span>
-          </div>
-          <div className="flex items-center gap-2 bg-background border border-border px-4 py-2 rounded-full shadow-sm">
+          </Link>
+          <Link href="/dashboard/streak" className="flex items-center gap-2 bg-background border border-border px-4 py-2 rounded-full shadow-sm hover:border-orange-500/30 transition-all">
             <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
             <span className="font-bold text-xs tracking-tight">{streak} Day Streak</span>
-          </div>
-          <EnergyBar />
+          </Link>
+          <Link href="/dashboard/energy" className="hover:opacity-80 transition-opacity">
+            <EnergyBar />
+          </Link>
         </div>
+
 
       </header>
 
