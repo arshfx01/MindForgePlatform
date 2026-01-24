@@ -86,19 +86,19 @@ const FALLBACK_QUESTIONS: OnboardingQuestion[] = [
 
 export async function generateOnboardingQuestions(): Promise<OnboardingQuestion[]> {
     const prompt = `
-      You are the "Oracle" of MindForge. Generate 10 progressive critical thinking scenarios to assess a newcomer's baseline.
-      The scenarios must cover:
-      1. Deductive Logic
-      2. Cognitive Bias Identification
-      3. Ethical Utilitarianism
-      4. Dialectical Reasoning
-      5. Informational Literacy
+      You are the "Oracle" of MindForge. Generate 10 progressive critical thinking scenarios for a new user.
+      
+      RULES:
+      1. Language: Use simple, everyday language. No academic jargon.
+      2. Relatability: Scenarios should be about common life situations (work, friends, money, social media).
+      3. Length: Keep scenarios short (1-2 sentences).
+      
+      The scenarios must cover different thinking styles: logic, bias, ethics, and information.
       
       Format: JSON ARRAY ONLY. NO MARKDOWN.
-      Each object: {"id": number, "scenario": "...", "options": ["Option A (Logical)", "Option B (Fallback)", "Option C (Emotional)"]}
-      
-      Make them intellectually stimulating but accessible.
+      Each object: {"id": number, "scenario": "...", "options": ["Option A (Logical)", "Option B (Balanced)", "Option C (Emotional)"]}
     `;
+
 
     try {
         const result = await generateContentWithRetry(prompt);
@@ -137,35 +137,53 @@ export async function evaluateOnboarding(answers: { questionId: number, answerIn
     }
 }
 
-export async function generateScenario(userLevel: number, stats?: { logic: number; flexibility: number; ethics: number }): Promise<string> {
+export async function generateScenario(userLevel: number, stats?: { logic: number; flexibility: number; ethics: number }, lastScore?: number): Promise<string> {
     let focusArea = "General Critical Thinking";
     if (stats) {
-        // Identify lowest stat to focus on
         const lowest = Object.entries(stats).reduce((a, b) => a[1] < b[1] ? a : b);
-        focusArea = `Improving Weakness: ${lowest[0].toUpperCase()} (Current Score: ${lowest[1]})`;
+        focusArea = `Focus on improving: ${lowest[0].toUpperCase()}`;
+    }
+
+    // Adaptive Difficulty Logic
+    let difficultyTitle = "Medium";
+    let difficultyInstruction = "Provide a scenario that requires careful thought but is manageable.";
+
+    if (lastScore !== undefined) {
+        if (lastScore >= 80) {
+            difficultyTitle = "Challenging (Hard)";
+            difficultyInstruction = "The user easily solved the last one. Make this one COMPLEX. It should require deep thinking, involve multiple layers of contradiction, or subtle logical traps.";
+        } else if (lastScore <= 40) {
+            difficultyTitle = "Introductory (Easy)";
+            difficultyInstruction = "The user struggled previously. Make this one SIMPLE and very clear. Focus on a single, relatable dilemma.";
+        }
     }
 
     const prompt = `
-      Generate a Level ${userLevel} Critical Thinking Arena Scenario.
+      Generate a ${difficultyTitle} Critical Thinking Arena Scenario.
       Target User Focus: ${focusArea}
-      Subject: High-stakes ethical or logical crisis (e.g., AI alignment, resource scarcity, legal paradox).
+      
+      RULES for the Scenario:
+      1. Language: Simple, relatable, no complex jargon.
+      2. Relatability: Use real-world, everyday situations (e.g., workplace drama, social media, friendship, family, simple business).
+      3. Size: Shorter than usual. Max 3-4 sentences total.
+      4. Difficulty: ${difficultyInstruction}
       
       Structure in Markdown:
-      # [Provocative Title]
-      **Situation**: [2-3 sentences of context]
-      **The Dilemma**: [The core problem requiring deep thought]
-      **The Task**: [Specifically what the user must argue or solve]
-      
-      Make it feel "Cyberpunk/Deep Space" in tone.
+      # [Simple Title]
+      **Situation**: [Relatable context]
+      **The Dilemma**: [Clear problem to solve]
+      **The Task**: [Specific ask for the user]
     `;
+
     try {
         const result = await generateContentWithRetry(prompt);
         return result.response.text();
     } catch (error) {
         console.error("Scenario Gen Error:", error);
-        return "# Offline Mode\nSystem couldn't reach the Oracle.";
+        return "# Baseline Test\n**Situation**: The system is recalibrating.\n**The Dilemma**: You must remain sharp without an active trial.\n**The Task**: How do you maintain critical thinking skills daily?";
     }
 }
+
 
 export async function evaluateSubmission(scenario: string, userResponse: string): Promise<EvaluationResult> {
     const errorResult = {
@@ -174,23 +192,24 @@ export async function evaluateSubmission(scenario: string, userResponse: string)
     };
 
     const prompt = `
-      Act as the High Oracle of Logic. Evaluate this Arena submission.
+      Evaluate this critical thinking response.
       Scenario: ${scenario}
       User Response: ${userResponse}
       
-      Critique strictly but fairly. Identify logical fallacies and cognitive strengths.
+      BE FAIR BUT HONEST. Use relatable examples in your critique.
       
       Return JSON ONLY:
       {
         "score": 0-100,
         "xp_awarded": 0-200,
-        "summary": "Short, punchy critique",
-        "fallacies": ["List specific fallacies if any"],
-        "strengths": ["List specific strengths"],
-        "growth_tip": "One actionable tip to improve thinking",
+        "summary": "Clear and simple direct feedback",
+        "fallacies": ["List of any thinking errors in simple terms"],
+        "strengths": ["What they did well"],
+        "growth_tip": "One simple advice to do better",
         "new_stats": {"logic": 0-5, "flexibility": 0-5, "ethics": 0-5}
       }
     `;
+
 
     try {
         const result = await generateContentWithRetry(prompt);

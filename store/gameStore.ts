@@ -31,6 +31,8 @@ interface GameState {
     // UI Triggers
     showStreakAnimation: boolean;
     pointsEarned: number | null;
+    lastArenaScore: number | null;
+
 
     // Actions
     setUserId: (id: string) => void;
@@ -42,7 +44,9 @@ interface GameState {
     refillEnergy: () => void;
     setShowStreakAnimation: (show: boolean) => void;
     setPointsEarned: (points: number | null) => void;
+    setLastArenaScore: (score: number | null) => void;
 }
+
 
 export const useGameStore = create<GameState>((set, get) => ({
     userId: null,
@@ -59,8 +63,12 @@ export const useGameStore = create<GameState>((set, get) => ({
     initialized: false,
     showStreakAnimation: false,
     pointsEarned: null,
+    lastArenaScore: null,
 
     setUserId: (id) => set({ userId: id }),
+
+    setLastArenaScore: (score: number | null) => set({ lastArenaScore: score }),
+
 
     fetchProfile: async () => {
         const { userId } = get();

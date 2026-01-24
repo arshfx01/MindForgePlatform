@@ -26,25 +26,26 @@ export async function evaluateReasoning(analysis: string): Promise<{
 
   // Generate feedback
   const strengths = [
-    "Your analysis demonstrates clear logical structure.",
-    "You've identified key variables effectively.",
-    "Your reasoning shows good critical thinking skills.",
-    "You've considered multiple perspectives.",
+    "You explained your points very clearly.",
+    "You spotted the main issues in this situation.",
+    "Good job thinking about different sides of the story.",
+    "Your logic is easy to follow and makes sense.",
   ]
 
   const fallacies = score < 70 ? [
-    "Ad hominem reasoning detected",
-    "Potential false dichotomy",
-    "Circular reasoning elements",
+    "Some parts of your thinking might be a bit one-sided.",
+    "You might be assuming something without proof.",
+    "Try not to repeat the same point in different words.",
   ].slice(0, Math.floor(Math.random() * 2) + 1) : []
 
   const strategicPivot = score >= 80
-    ? "Excellent work! Your analysis demonstrates sophisticated critical thinking. Consider exploring counter-arguments more deeply to strengthen your position further."
+    ? "Great job! You're thinking deeply. Next time, try to see if there's an even better solution."
     : score >= 60
-    ? "Good analysis with solid foundations. To improve, try identifying underlying assumptions and exploring alternative interpretations of the key variables."
-    : "Your analysis shows promise. Focus on structuring your arguments more clearly and providing specific evidence for your claims. Consider the logical relationships between your points."
+      ? "Good start! Try to explain 'why' you think that a bit more."
+      : "Keep practicing! Try breaking the problem into smaller pieces next time."
 
-  const feedbackMarkdown = `Strengths:\n${strengths[Math.floor(Math.random() * strengths.length)]}\n\nLogical Fallacies:\n${fallacies.length > 0 ? fallacies.join(", ") : "None detected"}\n\nStrategic Pivot:\n${strategicPivot}`
+  const feedbackMarkdown = `Strengths:\n${strengths[Math.floor(Math.random() * strengths.length)]}\n\nThinking Errors:\n${fallacies.length > 0 ? fallacies.join(", ") : "None detected"}\n\nTip for Next Time:\n${strategicPivot}`
+
 
   // Calculate XP (50-100 based on score)
   const xpAwarded = Math.floor(50 + (score / 100) * 50)

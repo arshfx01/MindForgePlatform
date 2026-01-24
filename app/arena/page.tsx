@@ -25,8 +25,11 @@ function ArenaContent() {
         stats,
         energy,
         consumeEnergy,
-        setPointsEarned
+        setPointsEarned,
+        lastArenaScore,
+        setLastArenaScore
     } = useGameStore();
+
 
     // Priority: URL Param Level > Store Level
     const activeLevel = queryLevel ? parseInt(queryLevel) : storeLevel;
@@ -61,8 +64,9 @@ function ArenaContent() {
         if (!ok) return;
 
         setLoading(true);
-        const text = await generateScenario(activeLevel, stats);
+        const text = await generateScenario(activeLevel, stats, lastArenaScore || undefined);
         setScenarioText(text);
+
         setLoading(false);
         setHasStarted(true);
     };
@@ -72,6 +76,8 @@ function ArenaContent() {
 
         const result = await evaluateSubmission(scenarioText, input);
         setEvaluation(result);
+        setLastArenaScore(result.score);
+
 
         // Update Profile & Save Result
         const xpGained = result.xp_awarded;
