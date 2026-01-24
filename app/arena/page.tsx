@@ -6,10 +6,12 @@ import { ArenaImmersiveLayout } from "@/components/arena/ArenaImmersiveLayout";
 import { OracleFeedback, type Evaluation } from "@/components/arena/OracleFeedback";
 import { useGameStore } from "@/store/gameStore";
 import { generateScenario, evaluateSubmission } from "@/services/ai/oracle";
-import { Loader2, Send, BrainCircuit, Play } from "lucide-react";
+import { Loader2, Send, BrainCircuit, Play, AlertCircle } from "lucide-react";
 import { saveScenarioResult } from "@/app/actions/game";
 import { motion, AnimatePresence } from "framer-motion";
 import { BackButton } from "@/components/ui/BackButton";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 function ArenaContent() {
     const searchParams = useSearchParams();
@@ -17,7 +19,10 @@ function ArenaContent() {
 
     const [input, setInput] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isInitializing, setIsInitializing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
+
     const {
         userId,
         level: storeLevel,
@@ -30,17 +35,14 @@ function ArenaContent() {
         setLastArenaScore
     } = useGameStore();
 
-
-    // Priority: URL Param Level > Store Level
     const activeLevel = queryLevel ? parseInt(queryLevel) : storeLevel;
 
     const [scenarioText, setScenarioText] = useState("Loading scenario...");
     const [loading, setLoading] = useState(true);
-    const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
+    const [timeLeft, setTimeLeft] = useState(300);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [hasStarted, setHasStarted] = useState(false);
 
-    // Timer logic
     useEffect(() => {
         if (hasStarted && timeLeft > 0 && !evaluation) {
             const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
@@ -55,77 +57,86 @@ function ArenaContent() {
     };
 
     const startScenario = async () => {
+        setError(null);
         if (energy <= 0) {
-            alert("Insufficient energy. Replenish needed.");
+            setError("Insufficient energy units. Neutralize recovery protocol engaged. Please wait for replenishment.");
             return;
         }
 
+        setIsInitializing(true);
         const ok = await consumeEnergy();
-        if (!ok) return;
+        if (!ok) {
+            setIsInitializing(false);
+            return;
+        }
 
         setLoading(true);
-        const text = await generateScenario(activeLevel, stats, lastArenaScore || undefined);
-        setScenarioText(text);
-
-        setLoading(false);
-        setHasStarted(true);
+        try {
+            const text = await generateScenario(activeLevel, stats, lastArenaScore || undefined);
+            setScenarioText(text);
+            setLoading(false);
+            setHasStarted(true);
+        } catch (err) {
+            setError("Failed to establish secure logic link. Please attempt reconnection.");
+        } finally {
+            setIsInitializing(false);
+        }
     };
 
     const handleSubmit = async () => {
         setIsSubmitting(true);
+        try {
+            const result = await evaluateSubmission(scenarioText, input);
+            setEvaluation(result);
+            setLastArenaScore(result.score);
 
-        const result = await evaluateSubmission(scenarioText, input);
-        setEvaluation(result);
-        setLastArenaScore(result.score);
+            const xpGained = result.xp_awarded;
+            setPointsEarned(xpGained);
 
+            if (userId) {
+                await saveScenarioResult(
+                    userId,
+                    null,
+                    {
+                        scenario: scenarioText,
+                        response: input,
+                        evaluation: result
+                    },
+                    xpGained,
+                    result.new_stats
+                );
 
-        // Update Profile & Save Result
-        const xpGained = result.xp_awarded;
-        setPointsEarned(xpGained); // Trigger animation
-
-        if (userId) {
-            await saveScenarioResult(
-                userId,
-                null,
-                {
-                    scenario: scenarioText,
-                    response: input,
-                    evaluation: result
-                },
-                xpGained,
-                result.new_stats
-            );
-
-            // Optimistic Update
-            updateProfile({
-                xp: (useGameStore.getState().xp || 0) + xpGained,
-                stats: {
-                    logic: stats.logic + (result.new_stats?.logic || 0),
-                    flexibility: stats.flexibility + (result.new_stats?.flexibility || 0),
-                    ethics: stats.ethics + (result.new_stats?.ethics || 0),
-                }
-            });
+                updateProfile({
+                    xp: (useGameStore.getState().xp || 0) + xpGained,
+                    stats: {
+                        logic: stats.logic + (result.new_stats?.logic || 0),
+                        flexibility: stats.flexibility + (result.new_stats?.flexibility || 0),
+                        ethics: stats.ethics + (result.new_stats?.ethics || 0),
+                    }
+                });
+            }
+        } catch (err) {
+            setError("Transmission error during evaluation. Logic engine stalled.");
+        } finally {
+            setIsSubmitting(false);
         }
-
-        setIsSubmitting(false);
     };
 
     if (!hasStarted) {
         return (
-            <div className={`relative flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] p-8 overflow-hidden bg-background ${isFullscreen ? "fixed inset-0 z-50 bg-background" : ""}`}>
-                {/* Background ambient light */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
+            <div className={`relative flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] p-8 overflow-hidden bg-[#fafafa] ${isFullscreen ? "fixed inset-0 z-50 bg-[#fafafa]" : ""}`}>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/[0.03] rounded-full blur-[100px] pointer-events-none" />
 
                 <div className="absolute top-4 left-4 z-20">
                     <BackButton />
                 </div>
 
-                <div className="max-w-2xl w-full text-center space-y-12 relative z-10">
+                <div className="max-w-2xl w-full text-center space-y-10 relative z-10">
                     <div className="space-y-4">
                         <motion.h1
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="text-6xl md:text-8xl font-black tracking-tighter uppercase italic text-transparent bg-clip-text bg-gradient-to-r from-primary via-white to-primary text-glow drop-shadow-2xl"
+                            className="text-6xl md:text-7xl font-black tracking-tighter uppercase text-foreground leading-[0.8]"
                         >
                             The Arena
                         </motion.h1>
@@ -133,43 +144,49 @@ function ArenaContent() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.2 }}
-                            className="text-lg text-muted-foreground font-mono tracking-widest uppercase"
+                            className="text-xs font-bold text-muted-foreground/60 tracking-[0.4em] uppercase"
                         >
-                            Cognitive Evaluation Protocol • Level {activeLevel}
+                            Cognitive Protocol • Instance {activeLevel}
                         </motion.p>
                     </div>
 
                     <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: 0.4 }}
-                        className="glass-card p-10 rounded-[32px] border-primary/20 space-y-8"
+                        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                        className="bg-white border border-border/60 p-12 rounded-[3rem] shadow-sm space-y-10"
                     >
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8 text-center">
-                            <div className="flex flex-col items-center space-y-1 md:space-y-2">
-                                <span className="text-3xl md:text-4xl font-black text-primary tabular-nums">5:00</span>
-                                <span className="text-[10px] md:text-xs uppercase tracking-widest text-muted-foreground font-bold">Time Limit</span>
+                        {error && (
+                            <Alert variant="destructive" className="text-left animate-in fade-in slide-in-from-top-4">
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertTitle>System Alert</AlertTitle>
+                                <AlertDescription>{error}</AlertDescription>
+                            </Alert>
+                        )}
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 text-center">
+                            <div className="flex flex-col items-center space-y-2">
+                                <span className="text-3xl font-black text-foreground tabular-nums tracking-tighter">5:00</span>
+                                <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold italic opacity-60">Time Limit</span>
                             </div>
-                            <div className="flex flex-col items-center space-y-1 md:space-y-2 border-y sm:border-y-0 sm:border-x border-white/10 py-4 sm:py-0">
-                                <span className="text-3xl md:text-4xl font-black text-white tabular-nums">10</span>
-                                <span className="text-[10px] md:text-xs uppercase tracking-widest text-muted-foreground font-bold">Energy Cost</span>
+                            <div className="flex flex-col items-center space-y-2 border-y sm:border-y-0 sm:border-x border-border/40 py-6 sm:py-0">
+                                <span className="text-3xl font-black text-foreground tabular-nums tracking-tighter">10</span>
+                                <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold italic opacity-60">Energy Units</span>
                             </div>
-                            <div className="flex flex-col items-center space-y-1 md:space-y-2">
-                                <span className="text-3xl md:text-4xl font-black text-secondary tabular-nums">2X</span>
-                                <span className="text-[10px] md:text-xs uppercase tracking-widest text-muted-foreground font-bold">XP Multiplier</span>
+                            <div className="flex flex-col items-center space-y-2">
+                                <span className="text-3xl font-black text-primary tabular-nums tracking-tighter">2.0X</span>
+                                <span className="text-[10px] uppercase tracking-widest text-primary font-bold italic opacity-60">XP Yield</span>
                             </div>
                         </div>
 
-                        <button
+                        <Button
                             onClick={startScenario}
-                            className="w-full group relative py-6 bg-primary text-primary-foreground rounded-2xl font-black text-2xl overflow-hidden shadow-[0_0_40px_rgba(var(--primary),0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+                            loading={isInitializing}
+                            className="w-full h-20 text-lg font-black tracking-widest uppercase rounded-3xl shadow-xl shadow-primary/10 hover:shadow-primary/20 transition-all active:scale-[0.98]"
                         >
-                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                            <span className="relative z-10 flex items-center justify-center gap-3">
-                                <Play className="w-8 h-8 fill-current" />
-                                INITIALIZE PROTOCOL
-                            </span>
-                        </button>
+                            <Play className="w-5 h-5 fill-current mr-2" />
+                            Initialize Trial
+                        </Button>
                     </motion.div>
                 </div>
             </div>
@@ -177,40 +194,40 @@ function ArenaContent() {
     }
 
     return (
-        <main className={`flex flex-col bg-background ${isFullscreen ? "fixed inset-0 z-50 h-screen" : "min-h-[calc(100vh-4rem)] h-auto lg:h-[calc(100vh-4rem)]"}`}>
-            <header className="h-16 px-6 flex items-center justify-between border-b border-white/5 bg-background/50 backdrop-blur-md z-20 sticky top-0 lg:static">
-                <div className="flex items-center gap-4">
+        <main className={`flex flex-col bg-[#fafafa] ${isFullscreen ? "fixed inset-0 z-50 h-screen" : "min-h-[calc(100vh-4rem)] h-auto lg:h-[calc(100vh-4rem)]"}`}>
+            <header className="h-16 px-6 flex items-center justify-between border-b border-border/40 bg-white/80 backdrop-blur-md z-20 sticky top-0 lg:static">
+                <div className="flex items-center gap-6">
                     <button
                         onClick={() => setHasStarted(false)}
-                        className="text-muted-foreground hover:text-white transition-colors"
+                        className="text-muted-foreground/60 hover:text-foreground transition-colors group flex items-center gap-2"
                     >
-                        <span className="text-xs font-mono font-bold uppercase tracking-widest hidden sm:inline">Abort Mission</span>
-                        <span className="text-xs font-mono font-bold uppercase tracking-widest sm:hidden">Exit</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest">Terminate Session</span>
                     </button>
 
-                    <div className="h-4 w-[1px] bg-white/10" />
+                    <div className="h-4 w-[1px] bg-border/40" />
 
                     <div className="flex items-center gap-3">
-                        <span className="text-xs font-mono font-bold text-primary animate-pulse">ACTIVE PROTOCOL</span>
-                        <div className="h-1.5 w-32 bg-secondary/20 rounded-full overflow-hidden">
+                        <span className="text-[10px] font-bold text-primary animate-pulse tracking-widest uppercase">Live Protocol</span>
+                        <div className="h-1 w-24 bg-primary/10 rounded-full overflow-hidden">
                             <motion.div
-                                className="h-full bg-primary box-shadow-[0_0_10px_rgba(var(--primary),1)]"
+                                className="h-full bg-primary"
                                 initial={{ width: "100%" }}
                                 animate={{ width: `${(timeLeft / 300) * 100}%` }}
+                                transition={{ duration: 1 }}
                             />
                         </div>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-6">
-                    <div className="text-3xl font-mono font-black text-white tabular-nums tracking-tight">
+                <div className="flex items-center gap-6 text-foreground">
+                    <div className="text-2xl font-black tabular-nums tracking-tighter">
                         {formatTime(timeLeft)}
                     </div>
                     <button
                         onClick={() => setIsFullscreen(!isFullscreen)}
-                        className="p-2 hover:bg-white/5 rounded-lg text-muted-foreground hover:text-white transition-colors"
+                        className="p-2 hover:bg-muted/50 rounded-full text-muted-foreground transition-all active:scale-90"
                     >
-                        <BrainCircuit className="w-6 h-6" />
+                        <BrainCircuit className="w-5 h-5" />
                     </button>
                 </div>
             </header>
@@ -226,23 +243,24 @@ function ArenaContent() {
                             className="space-y-6"
                         >
                             {loading ? (
-                                <div className="flex flex-col items-center justify-center h-[300px] gap-4 text-muted-foreground">
+                                <div className="flex flex-col items-center justify-center h-[400px] gap-6 text-muted-foreground">
                                     <div className="relative">
-                                        <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse" />
-                                        <Loader2 className="w-12 h-12 animate-spin text-primary relative z-10" />
+                                        <div className="absolute inset-0 bg-primary/5 blur-[40px] rounded-full animate-pulse" />
+                                        <Loader2 className="w-10 h-10 animate-spin text-primary relative z-10 opacity-60" />
                                     </div>
-                                    <div className="flex flex-col items-center gap-1">
-                                        <span className="font-bold text-lg text-white font-mono tracking-widest uppercase">Consulting Oracle</span>
-                                        <span className="text-xs text-primary/80 uppercase tracking-widest">Retrieving Level {activeLevel} Data...</span>
+                                    <div className="flex flex-col items-center gap-2">
+                                        <span className="font-bold text-sm tracking-[0.3em] uppercase opacity-40">Connecting to Oracle</span>
                                     </div>
                                 </div>
                             ) : (
-                                scenarioText.split("\n").map((line, i) => {
-                                    if (line.startsWith("# ")) return <h1 key={i} className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary to-white mb-6 tracking-tight">{line.replace("# ", "")}</h1>
-                                    if (line.startsWith("**")) return <p key={i} className="font-bold mt-6 text-primary text-lg">{line.replace(/\*\*/g, "")}</p>
-                                    if (line.trim().startsWith("-")) return <li key={i} className="ml-4 list-disc text-muted-foreground marker:text-primary">{line.replace("-", "").trim()}</li>
-                                    return <p key={i} className="leading-relaxed text-muted-foreground text-lg mb-3">{line}</p>
-                                })
+                                <div className="space-y-4">
+                                    {scenarioText.split("\n").map((line, i) => {
+                                        if (line.startsWith("# ")) return <h1 key={i} className="text-3xl font-black text-foreground mb-8 tracking-tight">{line.replace("# ", "")}</h1>
+                                        if (line.startsWith("**")) return <p key={i} className="font-bold mt-8 text-primary text-sm uppercase tracking-widest">{line.replace(/\*\*/g, "")}</p>
+                                        if (line.trim().startsWith("-")) return <li key={i} className="ml-5 list-disc text-muted-foreground/80 marker:text-primary/40 leading-relaxed">{line.replace("-", "").trim()}</li>
+                                        return <p key={i} className="leading-relaxed text-foreground/70 text-lg mb-4">{line}</p>
+                                    })}
+                                </div>
                             )}
                         </motion.div>
                     </AnimatePresence>
@@ -250,49 +268,42 @@ function ArenaContent() {
                 editor={
                     <div className="h-full flex flex-col gap-4">
                         {evaluation ? (
-                            <div className="flex-1 overflow-auto custom-scrollbar p-2">
+                            <div className="flex-1 overflow-auto custom-scrollbar p-1">
                                 <OracleFeedback evaluation={evaluation} />
-                                <button
+                                <Button
                                     onClick={() => {
                                         setEvaluation(null);
                                         setInput("");
                                         setHasStarted(false);
                                     }}
-                                    className="mt-6 w-full py-4 bg-secondary text-secondary-foreground rounded-xl hover:brightness-110 transition-all font-bold border border-secondary shadow-[0_0_20px_rgba(var(--secondary),0.4)] active:scale-[0.98] uppercase tracking-widest text-sm"
+                                    className="mt-8 w-full h-14 font-black uppercase tracking-widest shadow-lg shadow-primary/5"
                                 >
-                                    Transmit New Inquiry
-                                </button>
+                                    Proceed to Next Trial
+                                </Button>
                             </div>
                         ) : (
                             <>
                                 <div className="flex-1 relative group">
                                     <textarea
-                                        className="w-full h-full bg-black/40 resize-none focus:outline-none font-mono text-sm leading-relaxed p-6 border border-white/5 rounded-xl text-primary/90 focus:border-primary/50 focus:bg-black/60 transition-all placeholder:text-white/20"
-                                        placeholder="> AWAITING INPUT...
-> Draft your ethical defense or logical resolution here."
+                                        className="w-full h-full bg-muted/20 resize-none focus:outline-none font-sans text-base leading-relaxed p-8 rounded-[1.5rem] border border-border/40 text-foreground transition-all placeholder:text-muted-foreground/30 focus:bg-white focus:border-primary/20 shadow-inner"
+                                        placeholder="Draft your reasoning here... Identify cognitive biases, evaluate evidence, and present your synthesis."
                                         value={input}
                                         onChange={(e) => setInput(e.target.value)}
                                         spellCheck={false}
                                     />
-                                    <div className="absolute bottom-4 right-4 opacity-10 group-focus-within:opacity-40 transition-opacity pointer-events-none">
-                                        <BrainCircuit className="w-24 h-24 text-primary" />
-                                    </div>
                                 </div>
-                                <div className="flex justify-between items-center pt-4 border-t border-white/5 px-2">
-                                    <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
-                                        {input.length} chars
+                                <div className="flex justify-between items-center pt-2 px-2">
+                                    <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em]">
+                                        {input.length} Character Synthesis
                                     </span>
-                                    <button
+                                    <Button
                                         onClick={handleSubmit}
                                         disabled={isSubmitting || !input.trim() || timeLeft <= 0}
-                                        className="flex items-center gap-3 bg-primary text-primary-foreground px-8 py-3 rounded-xl font-bold hover:brightness-110 disabled:opacity-50 disabled:grayscale transition-all shadow-[0_0_20px_rgba(var(--primary),0.25)] active:scale-[0.98]"
+                                        loading={isSubmitting}
+                                        className="h-14 px-10 font-black tracking-[0.2em] shadow-xl shadow-primary/10"
                                     >
-                                        {isSubmitting ? (
-                                            <><Loader2 className="w-5 h-5 animate-spin" /> PROCESSING...</>
-                                        ) : (
-                                            <><Send className="w-5 h-5" /> EXECUTE</>
-                                        )}
-                                    </button>
+                                        Execute Analysis
+                                    </Button>
                                 </div>
                             </>
                         )}
@@ -302,6 +313,7 @@ function ArenaContent() {
         </main>
     );
 }
+
 
 export default function ArenaPage() {
     return (
